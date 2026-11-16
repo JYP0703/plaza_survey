@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>도시광장 경관 인식에 관한 설문조사</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --bg: #ebebeb;          /* 사진 주변은 중간 밝기의 무채색으로 둔다(대비 효과 최소화) */
+    --surface: #ffffff;
+    --ink: #1d1d1f;
+    --muted: #5e6066;
+    --line: #cfd0d3;
+    --accent: #1f4e8c;
+    --accent-ink: #ffffff;
+    --danger: #a3261c;
+    --radius-card: 10px;
+    --radius-ctl: 6px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    font-size: 17px; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  .card { background: var(--surface); border-radius: var(--radius-card); padding: 28px 28px 32px; }
+  h1 { font-size: 26px; line-height: 1.35; margin: 0 0 6px; font-weight: 700; }
+  h2 { font-size: 21px; line-height: 1.4; margin: 0 0 14px; font-weight: 700; }
+  h3 { font-size: 17px; margin: 22px 0 4px; font-weight: 700; }
+  p { margin: 0 0 12px; }
+  .sub { color: var(--muted); font-size: 15px; margin-bottom: 22px; }
+  .note { color: var(--muted); font-size: 15px; }
+  .req { color: var(--accent); margin-left: 3px; }
+  .hint { margin: -4px 0 10px; font-size: 14px; }
+  .consent-box {
+    border: 1px solid var(--line); border-radius: var(--radius-ctl);
+    max-height: 340px; overflow-y: auto; padding: 4px 18px 14px; margin: 8px 0 6px; font-size: 15.5px;
+  }
+  .consent-box h3:first-child { margin-top: 14px; }
+  .yn { margin: 18px 0 0; padding: 0; border: 0; }
+  .yn legend { font-weight: 600; padding: 0; margin-bottom: 8px; }
+  .yn-row { display: flex; gap: 8px; }
+  .choice { position: relative; }
+  .choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .choice span {
+    display: inline-block; min-width: 76px; text-align: center; padding: 8px 16px;
+    border: 1px solid var(--line); border-radius: var(--radius-ctl); background: #fff; cursor: pointer; user-select: none;
+  }
+  .choice input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .choice input:focus-visible + span { outline: 3px solid #8fb1e3; outline-offset: 2px; }
+  .btn {
+    display: inline-block; margin-top: 26px; padding: 12px 28px; font: inherit; font-weight: 600;
+    background: var(--accent); color: var(--accent-ink); border: 0; border-radius: var(--radius-ctl); cursor: pointer;
+  }
+  .btn:disabled { background: #aeb4bd; cursor: not-allowed; }
+  .btn:focus-visible { outline: 3px solid #8fb1e3; outline-offset: 2px; }
+  .btn-row { display: flex; justify-content: flex-end; }
+  .alert { border-left: 4px solid var(--accent); background: #f3f6fa; padding: 10px 14px; margin: 0 0 18px; font-size: 15.5px; }
+  .alert.warn { border-color: #b7791f; background: #fbf6ec; }
+  .alert.err { border-color: var(--danger); background: #fbf0ef; }
+  [hidden] { display: none !important; }
+
+  /* 사진 평가 화면 */
+  .rate { max-width: 1440px; margin: 0 auto; padding: 16px 16px 56px; }
+  .progress { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 15px; color: var(--muted); }
+  .bar { flex: 1; height: 4px; background: #d6d6d8; border-radius: 2px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .25s ease; }
+  .rate-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .stim { margin: 0; }
+  .stim img { display: block; width: 100%; height: auto; background: #d9d9d9; }
+  .items { background: var(--surface); border-radius: var(--radius-card); padding: 20px 20px 24px; }
+  .q { border: 0; margin: 0 0 20px; padding: 0; }
+  .q legend { padding: 0; margin-bottom: 8px; font-weight: 600; line-height: 1.55; }
+  .scale { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .scale .choice span { min-width: 0; width: 100%; padding: 8px 0; }
+  .anchors { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+  @media (min-width: 1100px) {
+    .rate-grid { grid-template-columns: minmax(0, 1.75fr) minmax(360px, 1fr); align-items: start; }
+    .stim { position: sticky; top: 16px; }
+  }
+  @media (max-width: 520px) {
+    .card { padding: 22px 18px 26px; }
+    .wrap { padding-top: 20px; }
+    h1 { font-size: 23px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+  pre.dump { white-space: pre-wrap; font-size: 12.5px; background: #f5f5f6; padding: 12px; border-radius: 6px; max-height: 360px; overflow: auto; }
+</style>
+</head>
+<body>
+
+<!-- ───────────── 1. 연구 안내 및 동의 ───────────── -->
+<section id="s-consent" class="wrap">
+  <div class="card">
+    <h1>도시광장 경관 인식에 관한 설문조사</h1>
+    <p class="sub">연세대학교 일반대학원 도시공학과 · 연구자 박재용</p>
+
+    <div id="mobile-warn" class="alert warn" hidden>
+      사진을 큰 화면으로 보셔야 하는 설문이므로, 가능하시다면 PC나 노트북으로 참여해 주십시오.
+    </div>
+
+     <p>안녕하십니까. 바쁘신 와중에도 설문에 참여해 주셔서 감사합니다. 참여 전 아래 내용을 확인해 주시기 바랍니다.</p>
+
+    <div class="consent-box" tabindex="0" aria-label="연구 안내문">
+      <p style="margin-top:14px">본 설문은 연세대학교 도시공학과 석사학위 논문을 위한 연구의 일환으로 도시광장의 경관에 대한 인식을 조사하고자 진행되고 있습니다. 본 연구는 도시광장의 한 지점에서 조망되는 경관에 대한 이용자의 인식을 측정하여, 도시광장의 경관 관리 방안을 탐구하고자 합니다. 연구의 타당성을 위해 구체적인 장소명과 연구 내용은 설문을 마친 직후 안내해 드립니다.</p>
+      <p>대상은 연세대학교 재학생으로, 참여는 1회로 한정됩니다. 도시광장 사진 7장이 한 장씩 제시되며, 사진마다 5개 문항에 응답하신 뒤 응답자 일반사항 3개 문항에 답하시게 됩니다. 총 38문항이며 약 5분이 소요됩니다. 응답을 마쳐야 다음 사진으로 넘어갈 수 있으며, 이전 사진으로는 돌아갈 수 없습니다. 설문 중에 언제든지 참여를 철회 및 중지하실 수 있으며 어떠한 불이익도 없습니다. 화면을 닫는 것만으로 중단되며, 작성 중이던 응답은 저장되지 않고 폐기되어 분석에 사용되지 않습니다.</p>
+      <p>이름, 학번, 연락처 등 개인을 식별할 수 있는 정보는 수집하지 않으며, 성별, 건축공학·도시공학·실내건축학 전공 여부, 경관 친숙도, 설문 응답을 수집합니다. 귀하께서 답변해 주신 모든 내용은 통계법 제33조(비밀의 보호)에 의거하여 연구목적 외에는 어떠한 목적으로도 사용되지 않으며 철저하게 비밀을 보장할 것을 약속드립니다.</p>
+      <p>설문 응답 사항은 본 연구를 수행하는 데 있어 귀중한 자료로 사용될 예정이오니 바쁘시더라도 정성껏 답변해 주시면 감사하겠습니다. 다시 한번 설문에 참여해 주셔서 대단히 감사합니다.</p>
+      <p>본 연구와 관련하여 문의할 사항이 있으시면 아래 연락처로 연락을 주시기 바랍니다.</p>
+      <p><strong>연구 담당자 연락처</strong><br>연세대학교 일반대학원 도시공학과 도시설계 및 재생 연구실 (02-2123-7482)<br>연구자 박재용 (qkrwodyd153@yonsei.ac.kr)</p>
+    </div>
+    <p class="note">위 상자를 스크롤하면 전체 내용을 보실 수 있습니다.</p>
+
+    <fieldset class="yn">
+      <legend>위 내용을 이해하였으며, 본 연구에 참여하기를 희망합니다.</legend>
+      <div class="yn-row">
+        <label class="choice"><input type="radio" name="c1" value="1"><span>예</span></label>
+        <label class="choice"><input type="radio" name="c1" value="0"><span>아니오</span></label>
+      </div>
+    </fieldset>
+    <fieldset class="yn">
+      <legend>현재 연세대학교 재학생입니다.</legend>
+      <div class="yn-row">
+        <label class="choice"><input type="radio" name="student" value="1"><span>예</span></label>
+        <label class="choice"><input type="radio" name="student" value="0"><span>아니오</span></label>
+      </div>
+    </fieldset>
+
+    <div class="btn-row"><button id="btn-consent" class="btn" disabled>설문 시작하기</button></div>
+  </div>
+</section>
+
+<!-- 동의하지 않음 -->
+<section id="s-refused" class="wrap" hidden>
+  <div class="card">
+    <h2>설문에 참여하실 수 없습니다</h2>
+    <p>연구 참여에 동의하신 경우에만 참여하실 수 있습니다. 관심을 가져 주셔서 대단히 감사합니다.</p>
+  </div>
+</section>
+
+<!-- 재학생 아님 -->
+<section id="s-ineligible" class="wrap" hidden>
+  <div class="card">
+    <h2>참여 대상이 아닙니다</h2>
+    <p>본 설문은 연세대학교 재학생을 대상으로 합니다. 관심을 가져 주셔서 대단히 감사합니다.</p>
+  </div>
+</section>
+
+<!-- 휴대폰 차단(설정에서 MOBILE_POLICY = "block"일 때) -->
+<section id="s-blocked" class="wrap" hidden>
+  <div class="card">
+    <h2>PC나 노트북으로 참여해 주십시오</h2>
+    <p>이 설문은 사진을 큰 화면으로 보고 응답해야 하므로 휴대폰에서는 참여하실 수 없습니다. 같은 주소를 PC나 노트북 브라우저에서 열어 주십시오.</p>
+  </div>
+</section>
+
+<!-- 이미 제출함 -->
+<section id="s-already" class="wrap" hidden>
+  <div class="card">
+    <h2>이미 응답을 제출하셨습니다</h2>
+    <p>이 브라우저에서 이미 설문을 마치셨습니다. 참여해 주셔서 감사합니다.</p>
+  </div>
+</section>
+
+<!-- ───────────── 2. 응답 안내 ───────────── -->
+<section id="s-intro" class="wrap" hidden>
+  <div class="card">
+    <h2>응답 안내</h2>
+    <p>본 설문은 귀하께서 사진 속 장소를 어떻게 경험하시는지 알아보기 위한 것입니다. 사진을 충분히 살펴보신 후, 각 문항을 주의 깊게 읽고 스스로에게 “내가 사진 속 장소에 있다면, 이 문장은 나의 생각이나 느낌을 얼마나 잘 나타내는가?”라고 질문해 보십시오. 각 문항마다 해당하는 점수 하나를 선택해 주십시오.</p>
+    <p>각 문항에 대한 응답은 1점(전혀 그렇지 않다)부터 7점(매우 그렇다)까지의 7점 척도로 되어 있으며, 점수가 클수록 문항의 내용에 더 동의하신다는 의미입니다.</p>
+    <p>정답은 없으며, 느끼시는 그대로 응답해 주시면 됩니다. 일부 사진은 서로 비슷해 보일 수 있으나, 같은 사진이 두 번 제시되지는 않습니다.</p>
+    <div class="alert">사진을 정확히 보실 수 있도록 화면 밝기를 충분히 높이고, 야간 모드(블루라이트 필터)는 꺼주십시오.</div>
+    <p class="note">응답을 마쳐야 다음 사진으로 넘어갈 수 있으며, 이전 사진으로는 돌아갈 수 없습니다.</p>
+    <p id="intro-loading" class="note">사진을 불러오는 중입니다…</p>
+    <div class="btn-row"><button id="btn-intro" class="btn" disabled>시작하기</button></div>
+  </div>
+</section>
+
+<!-- ───────────── 3. 사진 평가 ───────────── -->
+<section id="s-rate" class="rate" hidden>
+  <div class="progress">
+    <span id="prog-text">사진 1 / 7</span>
+    <div class="bar" aria-hidden="true"><i id="prog-bar"></i></div>
+  </div>
+  <div class="rate-grid">
+    <figure class="stim"><img id="stim-img" alt="평가할 도시광장 사진"></figure>
+    <form class="items" id="items-form" novalidate>
+        <p style="font-weight:600; font-size:18px; color:#6e7274; margin-bottom:18px">사진에 보이는 모습 그대로를 기준으로 응답해 주시기 바랍니다.</p>
+      <div id="items-list"></div>
+      <div class="btn-row"><button id="btn-next" class="btn" type="submit" disabled>다음</button></div>
+    </form>
+  </div>
+</section>
+
+<!-- ───────────── 4. 응답자 일반사항(성별·전공·경관 친숙도) ───────────── -->
+<section id="s-info" class="wrap" hidden>
+  <form class="card" id="info-form" novalidate>
+    <h2>응답자 일반사항</h2>
+    <p class="note">응답자 일반사항은 통계 분석에만 사용되며 개인을 식별할 수 없습니다.</p>
+    <div id="fam-slot" style="margin-top:18px"></div>
+    <div id="demo-slot"></div>
+
+    <div class="btn-row"><button id="btn-submit" class="btn" type="submit" disabled>제출하기</button></div>
+  </form>
+</section>
+
+<!-- 제출 중 / 오류 -->
+<section id="s-sending" class="wrap" hidden>
+  <div class="card">
+    <h2 id="send-title">응답을 제출하고 있습니다</h2>
+    <p id="send-msg">잠시만 기다려 주십시오. 창을 닫지 마십시오.</p>
+    <div id="send-err" class="alert err" hidden>
+      응답이 저장되지 않았습니다. 인터넷 연결을 확인한 뒤 다시 제출해 주십시오. 문제가 계속되면 창을 닫지 말고 연구자에게 연락해 주십시오.
+    </div>
+    <div class="btn-row"><button id="btn-retry" class="btn" hidden>다시 제출하기</button></div>
+  </div>
+</section>
+
+<!-- ───────────── 5. 완료 및 연구 안내(디브리핑) ───────────── -->
+<section id="s-thanks" class="wrap" hidden>
+  <div class="card">
+    <h2>설문이 완료되었습니다</h2>
+    <p>설문에 참여해 주셔서 진심으로 감사합니다.</p>
+    <p>본 설문은 연세대학교 도시공학과 석사학위 논문 「도시광장의 디지털 옥외광고가 이미지어빌리티와 방문의도에 미치는 영향」의 일환으로 수행되었습니다. 본 연구는 광화문광장에 설치된 디지털 옥외광고(대형 전광판, 미디어 파사드 등)가 광장의 이미지와 방문 의도에 어떤 영향을 미치는지 알아보기 위한 것입니다.</p>
+    <p>제시된 사진은 모두 서울 광화문광장의 같은 지점에서 주간과 야간에 촬영한 것으로, 사진마다 전광판의 유무와 광고 송출 여부를 달리하였으며 이를 위해 일부 사진은 편집하였습니다. 편집된 사진은 실제 시설이나 계획을 나타내지 않습니다.</p>
+    <p>연구 결과의 정확성을 위해, 아직 설문에 참여하지 않은 분께는 해당 내용을 알리지 말아 주시기 바랍니다.</p>
+    <div id="test-dump" hidden>
+      <div class="alert warn">테스트 모드입니다. 응답은 저장되지 않았고 아래는 제출될 자료입니다.</div>
+      <pre class="dump" id="dump"></pre>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   설정 — 이 블록만 고치면 된다
+   ════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  // Apps Script 웹 앱 URL(…/exec). 비워 두면 테스트 모드: 저장하지 않고 제출될 자료를 화면에 보여 준다.
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycby-HktUFUeczh4YCSC7ehr73SXuRHtY41HnV453LPG3GjoGvA3Kt9Ca7NHGREEJ6j7D/exec",
+  TOKEN: "plaza-2026-v1",        // Code.gs의 TOKEN과 같아야 한다
+  VERSION: "v1",                // 설문 내용을 바꾸면 올린다(시트에 함께 기록)
+
+  // 자극 사진: images/코드.jpg. 조건과 코드의 대응표는 공개 저장소에 올리지 말 것.
+  IMAGES: ["S01", "S02", "S03", "S04", "S05", "S06", "S07"],
+  IMAGE_DIR: "images/",
+  IMAGE_EXT: ".jpg",
+  FILLER: "S07",                // 필러 사진 코드(IMAGES 중 하나). 항상 첫 번째로 제시되고 나머지는 무작위 순서
+
+  // 사진별 문항. 줄을 더하거나 지우면 화면·시트 열·안내문의 문항 수가 함께 바뀐다
+  // id는 시트의 열 이름이 되므로, 설문을 시작한 뒤에는 바꾸지 말 것
+  ITEMS: [
+    { id: "im1", text: "이 장소는 그 자체로 뚜렷한 개성을 갖고 있다." },
+    { id: "im2", text: "이 장소를 구성하는 요소들이 명확하게 식별된다." },
+    { id: "im3", text: "이 장소는 기억에 오래 남을 것 같다." },
+    { id: "vi1", text: "나는 일부러 이 장소를 찾아갈 의향이 있다." },
+    { id: "vi2", text: "나는 근처를 지나게 된다면 이 장소에 들를 의향이 있다." },
+  ],
+  SHUFFLE_ITEMS: false,         // true면 사진마다 문항 순서를 섞고 그 순서를 기록
+  SCALE: { points: 7, left: "전혀 그렇지 않다", right: "매우 그렇다" },
+  MIN_VIEW_SEC: 0,              // 사진이 뜬 뒤 '다음'을 누를 수 있기까지 최소 시간(초). 0이면 제한 없음
+
+  // 응답자 일반사항: 경관 친숙도가 맨 위에 오고 아래 DEMOGRAPHICS 문항이 이어진다(필수 응답)
+  FAMILIARITY: { id: "fam", text: "사진 속 장소는 나에게 친숙한 곳이다.", points: 7,
+                 hint: "앞서 보신 사진 속 장소에 관한 질문입니다." },   // hint: 문항 제목 아래 작은 글씨
+
+  // ask: false면 묻지 않음, required: true면 답해야 제출 가능. 항목을 더하려면 같은 형식으로 한 줄 추가
+  DEMOGRAPHICS: [
+    // hint: 문항 아래에 작은 글씨로 붙는 설명(없으면 생략)
+    { id: "gender", ask: true, required: true, text: "귀하의 성별은 무엇입니까?", options: ["남성", "여성"] },
+    { id: "major",  ask: true, required: true, text: "귀하의 전공이 건축공학, 도시공학, 실내건축학 중 하나에 해당하십니까?",
+      hint: "복수전공이나 부전공이 있으신 경우 본전공을 기준으로 응답해 주십시오.",
+      options: ["예", "아니오"] },
+  ],
+
+  MOBILE_POLICY: "allow",        // "warn" 안내만 | "block" 휴대폰 차단 | "allow" 아무것도 안 함
+  ONE_RESPONSE_PER_BROWSER: true,
+};
+
+/* ════════════════════════════════════════════════════════════ */
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  const IS_TEST = !CONFIG.SCRIPT_URL || params.has("test");
+  const DONE_KEY = "survey_done_" + CONFIG.VERSION;
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  };
+  const uuid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+    : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16); });
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      let j;
+      if (window.crypto && crypto.getRandomValues) { const u = new Uint32Array(1); crypto.getRandomValues(u); j = u[0] % (i + 1); }
+      else j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  // 필러를 첫 번째에 두고 나머지 사진을 섞는다
+  function makeOrder() {
+    const rest = CONFIG.IMAGES.filter((c) => c !== CONFIG.FILLER);
+    if (rest.length === CONFIG.IMAGES.length) {     // FILLER가 IMAGES에 없으면 전체를 섞는다
+      console.warn("FILLER가 IMAGES에 없습니다:", CONFIG.FILLER);
+      if (IS_TEST) alert("설정 오류: FILLER(" + CONFIG.FILLER + ")가 IMAGES 목록에 없어 필러가 첫 번째로 고정되지 않습니다.");
+      return shuffle(CONFIG.IMAGES);
+    }
+    return [CONFIG.FILLER].concat(shuffle(rest));
+  }
+  const isMobile = () => {
+    const coarse = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+    return (coarse && Math.min(screen.width, screen.height) < 768) || /Mobi|Android|iPhone/i.test(navigator.userAgent);
+  };
+
+  // ── 상태 ──
+  const S = {
+    session: uuid(),
+    startedAt: null,
+    order: makeOrder(),
+    idx: 0,
+    imgW: 0,
+    ans: {},          // 사진 코드별 응답과 시간
+    info: {},
+    consent: { c1: null, student: null },
+    payload: null,
+    inSurvey: false,
+  };
+
+  const screens = ["s-consent", "s-refused", "s-ineligible", "s-blocked", "s-already", "s-intro", "s-rate", "s-info", "s-sending", "s-thanks"];
+  function show(id) {
+    screens.forEach((s) => { $(s).hidden = (s === id) ? false : true; });
+    window.scrollTo(0, 0);
+  }
+
+  // ── 시작 화면 결정 ──
+  const mobile = isMobile();
+  if (CONFIG.ONE_RESPONSE_PER_BROWSER && !IS_TEST && store.get(DONE_KEY)) { show("s-already"); return; }
+  if (mobile && CONFIG.MOBILE_POLICY === "block") { show("s-blocked"); return; }
+  if (mobile && CONFIG.MOBILE_POLICY === "warn") $("mobile-warn").hidden = false;
+  document.querySelectorAll(".n-img").forEach((el) => { el.textContent = CONFIG.IMAGES.length; });
+  document.querySelectorAll(".n-item").forEach((el) => { el.textContent = CONFIG.ITEMS.length; });
+
+  // ── 뒤로 가기 막기 ──
+  history.pushState({ s: 1 }, "");
+  window.addEventListener("popstate", () => {
+    if (S.inSurvey) { history.pushState({ s: 1 }, ""); }
+  });
+  window.addEventListener("beforeunload", (e) => {
+    if (S.inSurvey) { e.preventDefault(); e.returnValue = ""; }
+  });
+
+  // ── 1. 동의 ──
+  document.querySelectorAll('input[name="c1"], input[name="student"]').forEach((r) => {
+    r.addEventListener("change", () => {
+      S.consent[r.name] = r.value;
+      $("btn-consent").disabled = !(S.consent.c1 !== null && S.consent.student !== null);
+    });
+  });
+  $("btn-consent").addEventListener("click", () => {
+    if (S.consent.c1 !== "1") { show("s-refused"); return; }
+    if (S.consent.student !== "1") { show("s-ineligible"); return; }
+    S.startedAt = new Date();
+    S.inSurvey = true;
+    show("s-intro");
+    preload();
+  });
+
+  // ── 사진 미리 불러오기 ──
+  const cache = {};
+  function preload() {
+    let done = 0;
+    const finish = () => {
+      done++;
+      if (done === CONFIG.IMAGES.length) { $("intro-loading").hidden = true; $("btn-intro").disabled = false; }
+    };
+    CONFIG.IMAGES.forEach((code) => {
+      const im = new Image();
+      im.onload = finish;
+      im.onerror = () => { cache[code + "_err"] = 1; finish(); };
+      im.src = CONFIG.IMAGE_DIR + code + CONFIG.IMAGE_EXT;
+      cache[code] = im;
+    });
+  }
+  $("btn-intro").addEventListener("click", () => { show("s-rate"); renderImage(); });
+
+  // ── 7점 척도 한 문항 ──
+  function scaleHTML(name, text, points, left, right, hint) {
+    let cells = "";
+    for (let v = 1; v <= points; v++) {
+      cells += `<label class="choice"><input type="radio" name="${name}" value="${v}"><span>${v}</span></label>`;
+    }
+    return `<fieldset class="q"><legend>${text}</legend>
+      ${hint ? `<p class="note hint">${hint}</p>` : ""}
+      <div class="scale" style="grid-template-columns:repeat(${points},1fr)">${cells}</div>
+      <div class="anchors"><span>${left}</span><span>${right}</span></div></fieldset>`;
+  }
+
+  // ── 2. 사진 평가 ──
+  let minTimer = null;
+  function renderImage() {
+    const code = S.order[S.idx];
+    const n = S.order.length;
+    $("prog-text").textContent = `사진 ${S.idx + 1} / ${n}`;
+    $("prog-bar").style.width = `${(S.idx / n) * 100}%`;
+
+    const items = CONFIG.SHUFFLE_ITEMS ? shuffle(CONFIG.ITEMS) : CONFIG.ITEMS.slice();
+    S.ans[code] = { pos: S.idx + 1, itemOrder: items.map((it) => it.id).join(",") };
+    $("items-list").innerHTML = items.map((it) =>
+      scaleHTML(it.id, it.text, CONFIG.SCALE.points, CONFIG.SCALE.left, CONFIG.SCALE.right)).join("");
+
+    $("stim-img").src = CONFIG.IMAGE_DIR + code + CONFIG.IMAGE_EXT;
+
+    $("btn-next").disabled = true;
+    $("btn-next").textContent = (S.idx === n - 1) ? "다음 단계로" : "다음";
+    clearTimeout(minTimer);
+    S.minOk = CONFIG.MIN_VIEW_SEC <= 0;
+    if (!S.minOk) minTimer = setTimeout(() => { S.minOk = true; checkItems(); }, CONFIG.MIN_VIEW_SEC * 1000);
+    window.scrollTo(0, 0);
+  }
+  function checkItems() {
+    const all = CONFIG.ITEMS.every((it) => document.querySelector(`#items-form input[name="${it.id}"]:checked`));
+    $("btn-next").disabled = !(all && S.minOk);
+  }
+  $("items-form").addEventListener("change", checkItems);
+  $("items-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if ($("btn-next").disabled) return;
+    const code = S.order[S.idx];
+    const rec = S.ans[code];
+    if (!S.imgW) S.imgW = Math.round($("stim-img").getBoundingClientRect().width);   // 화면 배치가 같으므로 첫 사진에서 한 번만 잰다
+    CONFIG.ITEMS.forEach((it) => {
+      rec[it.id] = Number(document.querySelector(`#items-form input[name="${it.id}"]:checked`).value);
+    });
+    S.idx++;
+    if (S.idx < S.order.length) renderImage();
+    else { $("prog-bar").style.width = "100%"; renderInfo(); show("s-info"); }
+  });
+
+  // ── 3. 응답자 일반사항 ──
+  function renderInfo() {
+    const F = CONFIG.FAMILIARITY;
+    $("fam-slot").innerHTML = scaleHTML(F.id, F.text, F.points, CONFIG.SCALE.left, CONFIG.SCALE.right, F.hint);
+    $("demo-slot").innerHTML = CONFIG.DEMOGRAPHICS.filter((d) => d.ask).map((d) =>
+      `<fieldset class="yn"><legend>${d.text}</legend>` +
+      (d.hint ? `<p class="note hint">${d.hint}</p>` : '') +
+      `<div class="yn-row" style="flex-wrap:wrap">` +
+      d.options.map((o) => `<label class="choice"><input type="radio" name="${d.id}" value="${o}"><span>${o}</span></label>`).join("") +
+      `</div></fieldset>`).join("");
+  }
+  $("info-form").addEventListener("change", () => {
+    const need = [CONFIG.FAMILIARITY.id].concat(CONFIG.DEMOGRAPHICS.filter((d) => d.ask && d.required).map((d) => d.id));
+    $("btn-submit").disabled = !need.every((id) => document.querySelector(`#info-form input[name="${id}"]:checked`));
+  });
+  $("info-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if ($("btn-submit").disabled) return;
+    const fam = document.querySelector(`#info-form input[name="${CONFIG.FAMILIARITY.id}"]:checked`);
+    S.info[CONFIG.FAMILIARITY.id] = Number(fam.value);
+    CONFIG.DEMOGRAPHICS.filter((d) => d.ask).forEach((d) => {
+      const c = document.querySelector(`#info-form input[name="${d.id}"]:checked`);
+      S.info[d.id] = c ? c.value : "";
+    });
+    S.payload = buildPayload();
+    submit();
+  });
+
+  // ── 제출 자료(한 사람 = 한 행, 열은 사진 코드 순서로 고정) ──
+  function buildPayload() {
+    const now = new Date();
+    const p = {
+      token: CONFIG.TOKEN,
+      version: CONFIG.VERSION,
+      test: IS_TEST ? 1 : 0,
+      session_id: S.session,
+      duration_sec: Math.round((now - S.startedAt) / 1000),
+      device: mobile ? "mobile" : "desktop",
+      img_w: S.imgW,
+    };
+    CONFIG.IMAGES.forEach((code) => {
+      const r = S.ans[code] || {};
+      p[code + "_pos"] = r.pos ?? "";
+      if (CONFIG.SHUFFLE_ITEMS) p[code + "_itemorder"] = r.itemOrder ?? "";
+      CONFIG.ITEMS.forEach((it) => { p[code + "_" + it.id] = r[it.id] ?? ""; });
+    });
+    p[CONFIG.FAMILIARITY.id] = S.info[CONFIG.FAMILIARITY.id];
+    CONFIG.DEMOGRAPHICS.filter((d) => d.ask).forEach((d) => { p[d.id] = S.info[d.id]; });
+    return p;
+  }
+
+  // ── 제출 ──
+  async function submit() {
+    show("s-sending");
+    $("send-err").hidden = true; $("btn-retry").hidden = true;
+    $("send-title").textContent = "응답을 제출하고 있습니다";
+    $("send-msg").hidden = false;
+
+    if (!CONFIG.SCRIPT_URL) {          // 테스트 모드: 저장하지 않음
+      finish(true);
+      return;
+    }
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await fetch(CONFIG.SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },   // 사전 요청(preflight)을 피하기 위함
+          body: JSON.stringify(S.payload),
+        });
+        const out = await res.json();
+        if (out && out.ok) { finish(false); return; }
+        throw new Error(out && out.error || "unknown");
+      } catch (err) {
+        console.warn("submit failed", attempt, err);
+        await new Promise((r) => setTimeout(r, 1200 * attempt));
+      }
+    }
+    $("send-title").textContent = "제출하지 못했습니다";
+    $("send-msg").hidden = true;
+    $("send-err").hidden = false;
+    $("btn-retry").hidden = false;
+  }
+  $("btn-retry").addEventListener("click", submit);
+
+  function finish(dumpOnly) {
+    S.inSurvey = false;
+    if (!IS_TEST) store.set(DONE_KEY, "1");
+    if (dumpOnly) {
+      $("test-dump").hidden = false;
+      $("dump").textContent = JSON.stringify(S.payload, null, 2);
+    }
+    show("s-thanks");
+  }
+})();
+</script>
+</body>
+</html>
